@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 
 from src.api import app
-from src.retrieve import TfidfIndex, INDEX_FILE
+from src.config import INDEX_FILE
+from src.retrieve import TfidfIndex
 
 
 def setup_module():
