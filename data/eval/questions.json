@@ -1,0 +1,42 @@
+[
+  {
+    "id": "q1",
+    "question": "How do I reset my password?",
+    "relevant_doc_ids": ["password-reset"]
+  },
+  {
+    "id": "q2",
+    "question": "I was charged twice on my card, can I get a refund?",
+    "relevant_doc_ids": ["billing-refunds"]
+  },
+  {
+    "id": "q3",
+    "question": "My account is locked after failed login attempts",
+    "relevant_doc_ids": ["account-access"]
+  },
+  {
+    "id": "q4",
+    "question": "The app keeps crashing when I upload files",
+    "relevant_doc_ids": ["technical-outages"]
+  },
+  {
+    "id": "q5",
+    "question": "How can I upgrade to the Business plan?",
+    "relevant_doc_ids": ["plans-upgrades"]
+  },
+  {
+    "id": "q6",
+    "question": "How do I download or delete my personal data?",
+    "relevant_doc_ids": ["privacy-data"]
+  },
+  {
+    "id": "q7",
+    "question": "Where can I find my monthly invoices?",
+    "relevant_doc_ids": ["billing-refunds"]
+  },
+  {
+    "id": "q8",
+    "question": "Forgot password and the reset email is not arriving",
+    "relevant_doc_ids": ["password-reset"]
+  }
+]
