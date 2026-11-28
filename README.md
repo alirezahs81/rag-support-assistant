@@ -9,6 +9,8 @@
 
 **Retrieval-Augmented Generation** for support knowledge — offline, deterministic, and production-shaped.
 
+**Live demo:** [https://alirezahs81-rag-support-assistant-app-4ryhln.streamlit.app/](https://alirezahs81-rag-support-assistant-app-4ryhln.streamlit.app/)
+
 Chunked markdown knowledge base · **TF-IDF** retrieval · grounded answers · **Hit@K / MRR** · **FastAPI** · **Streamlit demo** · **Docker** · **pytest** + GitHub Actions.
 
 > No external LLM required. Answers are synthesized only from retrieved local documents.
@@ -17,24 +19,13 @@ Chunked markdown knowledge base · **TF-IDF** retrieval · grounded answers · *
 
 ## Live demo
 
-### Local
+- **Public app:** [RAG Support Assistant on Streamlit](https://alirezahs81-rag-support-assistant-app-4ryhln.streamlit.app/)
+- **Local:**
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
-
-http://localhost:8501 — sample questions, answer + sources, Hit@K / MRR in the sidebar.
-
-### Deploy: **Hugging Face Spaces** (recommended)
-
-Streamlit Community Cloud can be flaky; use HF Spaces instead.
-
-1. [Create a new Space](https://huggingface.co/new-space) → SDK **Streamlit** → CPU free.  
-2. Connect GitHub repo `alirezahs81/rag-support-assistant` (branch `main`, app file `app.py`).  
-3. Wait for the build; open the Space URL and add it to your profile README.
-
-Full steps: [docs/DEPLOY_HUGGINGFACE.md](docs/DEPLOY_HUGGINGFACE.md).
 
 ---
 
@@ -54,7 +45,7 @@ Full steps: [docs/DEPLOY_HUGGINGFACE.md](docs/DEPLOY_HUGGINGFACE.md).
 
 ```text
 rag-support-assistant/
-├── app.py                  # Streamlit demo (HF Spaces entrypoint)
+├── app.py                  # Streamlit demo
 ├── data/knowledge/
 ├── data/eval/questions.json
 ├── src/
