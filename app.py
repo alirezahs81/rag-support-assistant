@@ -4,7 +4,7 @@ Run locally::
 
     streamlit run app.py
 
-Deploy: Streamlit Community Cloud → point to this repo, Main file path: app.py
+Deploy: Streamlit Community Cloud → Main file path: app.py
 """
 
 from __future__ import annotations
@@ -37,78 +37,87 @@ def load_pipeline() -> RAGPipeline:
     return RAGPipeline(get_or_build_index())
 
 
-def main() -> None:
-    st.set_page_config(
-        page_title="RAG Support Assistant",
-        page_icon="💬",
-        layout="centered",
-    )
+def render_result(result: dict) -> None:
+    st.markdown("### Answer")
+    st.markdown(result["answer"])
+    badge = "grounded" if result["grounded"] else "no matching source"
+    st.caption(f"Status: **{badge}**")
+    if result["sources"]:
+        st.markdown("### Sources")
+        for s in result["sources"]:
+            with st.expander(
+                f"{s['title']}  ·  score={s['score']:.3f}  ·  `{s['doc_id']}`"
+            ):
+                st.write(s["text"])
 
-    st.title("RAG Support Knowledge Assistant")
-    st.caption(
-        "Offline retrieval-augmented answers over a local FAQ — "
-        "TF-IDF retrieval + grounded synthesis (no external LLM)."
-    )
 
+st.set_page_config(
+    page_title="RAG Support Assistant",
+    page_icon="💬",
+    layout="centered",
+)
+
+st.title("RAG Support Knowledge Assistant")
+st.caption(
+    "Offline retrieval-augmented answers over a local FAQ — "
+    "TF-IDF retrieval + grounded synthesis (no external LLM)."
+)
+
+try:
     pipe = load_pipeline()
+except Exception as exc:  # noqa: BLE001
+    st.error("Failed to build the retrieval index.")
+    st.exception(exc)
+    st.stop()
 
-    with st.sidebar:
-        st.header("Settings")
-        top_k = st.slider("Top-K sources", 1, 5, 3)
-        min_score = st.slider("Min similarity", 0.0, 0.5, 0.05, 0.01)
-        st.markdown("---")
-        if st.button("Run retrieval eval (Hit@K / MRR)"):
-            with st.spinner("Evaluating…"):
-                report = evaluate_retrieval(index=pipe.index, k=top_k)
-            st.metric("Hit@K", f"{report['hit_at_k']:.2f}")
-            st.metric("MRR", f"{report['mrr']:.2f}")
-            st.caption(f"n = {report['n']}, k = {report['k']}")
-        st.markdown("---")
-        st.markdown(
-            "[GitHub repo](https://github.com/alirezahs81/rag-support-assistant)"
-        )
-
-    st.subheader("Try a sample question")
-    cols = st.columns(2)
-    for i, q in enumerate(SAMPLE_QUESTIONS):
-        if cols[i % 2].button(q, use_container_width=True):
-            st.session_state["question"] = q
-
-    question = st.text_input(
-        "Your question",
-        value=st.session_state.get("question", ""),
-        placeholder="e.g. Where can I find my invoices?",
-    )
-
-    if st.button("Ask", type="primary") or (
-        question and st.session_state.get("_auto_ask")
-    ):
-        if not question.strip():
-            st.warning("Enter a question first.")
-        else:
-            with st.spinner("Retrieving…"):
-                result = pipe.ask(question, top_k=top_k, min_score=min_score)
-
-            st.markdown("### Answer")
-            st.markdown(result["answer"])
-
-            badge = "grounded" if result["grounded"] else "no matching source"
-            st.caption(f"Status: **{badge}**")
-
-            if result["sources"]:
-                st.markdown("### Sources")
-                for s in result["sources"]:
-                    with st.expander(
-                        f"{s['title']}  ·  score={s['score']:.3f}  ·  `{s['doc_id']}`"
-                    ):
-                        st.write(s["text"])
-
+with st.sidebar:
+    st.header("Settings")
+    top_k = st.slider("Top-K sources", 1, 5, 3)
+    min_score = st.slider("Min similarity", 0.0, 0.5, 0.05, 0.01)
     st.markdown("---")
-    st.caption(
-        "Demo knowledge base: password, billing, access, outages, plans, privacy. "
-        "Answers are composed only from retrieved chunks."
+    if st.button("Run retrieval eval (Hit@K / MRR)"):
+        with st.spinner("Evaluating…"):
+            report = evaluate_retrieval(index=pipe.index, k=top_k)
+        st.metric("Hit@K", f"{report['hit_at_k']:.2f}")
+        st.metric("MRR", f"{report['mrr']:.2f}")
+        st.caption(f"n = {report['n']}, k = {report['k']}")
+    st.markdown("---")
+    st.markdown(
+        "[GitHub repo](https://github.com/alirezahs81/rag-support-assistant)"
     )
 
+st.subheader("Try a sample question")
+cols = st.columns(2)
+for i, q in enumerate(SAMPLE_QUESTIONS):
+    if cols[i % 2].button(q, use_container_width=True, key=f"sample_{i}"):
+        st.session_state["question"] = q
+        st.session_state["run_query"] = True
 
-if __name__ == "__main__":
-    main()
+question = st.text_input(
+    "Your question",
+    value=st.session_state.get("question", ""),
+    placeholder="e.g. Where can I find my invoices?",
+    key="question_input",
+)
+# Keep session question in sync with the text box
+if question != st.session_state.get("question", ""):
+    st.session_state["question"] = question
+
+ask_clicked = st.button("Ask", type="primary")
+if ask_clicked:
+    st.session_state["run_query"] = True
+
+if st.session_state.get("run_query") and st.session_state.get("question", "").strip():
+    st.session_state["run_query"] = False
+    q = st.session_state["question"].strip()
+    with st.spinner("Retrieving…"):
+        result = pipe.ask(q, top_k=top_k, min_score=min_score)
+    render_result(result)
+elif ask_clicked and not st.session_state.get("question", "").strip():
+    st.warning("Enter a question first.")
+
+st.markdown("---")
+st.caption(
+    "Demo knowledge base: password, billing, access, outages, plans, privacy. "
+    "Answers are composed only from retrieved chunks."
+)
